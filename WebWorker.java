@@ -26,11 +26,14 @@ import java.io.*;
 import java.util.Date;
 import java.text.DateFormat;
 import java.util.TimeZone;
+import java.util.StringTokenizer;
+import java.util.Scanner;
 
 public class WebWorker implements Runnable
 {
 
 private Socket socket;
+private String file = null; 
 
 /**
 * Constructor: must have a valid open socket
@@ -67,18 +70,32 @@ public void run()
 /**
 * Read the HTTP request header.
 **/
-private void readHTTPRequest(InputStream is)
-{
-   String line;
+private void readHTTPRequest(InputStream is){
+   String line = null;
    BufferedReader r = new BufferedReader(new InputStreamReader(is));
+
+try{	
+line = r.readLine();
+} // end try
+
+catch (Exception e){
+   System.err.println("Request error: " + e);
+} // end catch
+
+StringTokenizer t = new StringTokenizer(line);
+t.nextToken(); // skips "GET"
+file = t.nextToken();   
+
    while (true) {
       try {
          while (!r.ready()) Thread.sleep(1);
          line = r.readLine();
          System.err.println("Request line: ("+line+")");
-         if (line.length()==0) break;
-      } catch (Exception e) {
-         System.err.println("Request error: "+e);
+         if (line.length()==0) 
+            break;
+      }
+      catch (Exception e) {
+         System.err.println("Request error: " + e);
          break;
       }
    }
@@ -95,7 +112,7 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
    Date d = new Date();
    DateFormat df = DateFormat.getDateTimeInstance();
    df.setTimeZone(TimeZone.getTimeZone("GMT"));
-   os.write("HTTP/1.1 200 OK\n".getBytes());
+   os.write("HTTP/1.1 200 Ok\n".getBytes());
    os.write("Date: ".getBytes());
    os.write((df.format(d)).getBytes());
    os.write("\n".getBytes());
@@ -116,9 +133,15 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
 **/
 private void writeContent(OutputStream os) throws Exception
 {
-   os.write("<html><head></head><body>\n".getBytes());
-   os.write("<h3>My web server works!</h3>\n".getBytes());
-   os.write("</body></html>\n".getBytes());
+   file = file.substring(1); // removes forward-slash from string "file"
+   File dir = new File(file); // creates File object from string "file"
+   if (dir != null){
+      Scanner s = new Scanner(dir);
+      while (s.hasNextLine()){
+	String temp = s.next()+ " ";
+	//System.err.println("Next line is: " + temp);
+         os.write(temp.getBytes());
+      } // end while
+   } // end if
 }
-
 } // end class

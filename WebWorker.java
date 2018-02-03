@@ -111,18 +111,17 @@ file = t.nextToken();
 private void writeHTTPHeader(OutputStream os, String contentType) throws Exception
 {
    try{
-      FileReader fr = new FileReader(file);
+      FileReader fr = new FileReader(file.substring(1));
       BufferedReader br = new BufferedReader (fr);
    } // end try
    catch (FileNotFoundException e){
-      System.err.println(file + " not found");
+      System.err.println(e + " " + file + " not found");
       os.write("HTTP/1.1 404 Not Found\n".getBytes());
    } // end catch
    
    Date d = new Date();
    DateFormat df = DateFormat.getDateTimeInstance();
    df.setTimeZone(TimeZone.getTimeZone("GMT")); 
-//  os.write("HTTP/1.1 404 Not Found\n".getBytes());
    os.write("HTTP/1.1 200 Ok\n".getBytes());
    os.write("Date: ".getBytes());
    os.write((df.format(d)).getBytes());
@@ -180,6 +179,7 @@ private void writeContent(OutputStream os) throws Exception
       System.err.println(file + " not found");
       os.write("<h1>404 Not Found</h1>".getBytes());
    } // end catch
+//   os.write("HTTP/1.1 200 Ok\n".getBytes());
 
 /*  filename = filename.substring(1); // removes forward-slash from string "file"
    dir = new File(file); // creates File object from string "file"

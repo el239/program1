@@ -86,7 +86,6 @@ StringTokenizer t = new StringTokenizer(line);
 t.nextToken(); // skips "GET"
 file = t.nextToken();   
 
-
    while (true) {
       try {
          while (!r.ready()) Thread.sleep(1);
@@ -179,25 +178,5 @@ private void writeContent(OutputStream os) throws Exception
       System.err.println(file + " not found");
       os.write("<h1>404 Not Found</h1>".getBytes());
    } // end catch
-//   os.write("HTTP/1.1 200 Ok\n".getBytes());
-
-/*  filename = filename.substring(1); // removes forward-slash from string "file"
-   dir = new File(file); // creates File object from string "file"
-   if (dir.exists()){
-      FileReader reader = new FileReader(dir);
-      BufferedReader buffer = new BufferedReader(reader);
-      line = buffer.readLine(); 
-      
-      while (line != null){
-        os.write(line.getBytes());
-	line = buffer.readLine();
-	System.out.println("in while");
-      } // end while
-     buffer.close();
-   } // end if
-   else{
-      os.write("<p> 404 NOT FOUND </p>".getBytes());
-  } // end else
-*/
 } // end writeContent
 } // end class

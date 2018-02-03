@@ -33,7 +33,7 @@ public class WebWorker implements Runnable
 {
 
 private Socket socket;
-private String file = null; 
+private String file = ""; 
 
 /**
 * Constructor: must have a valid open socket
@@ -66,10 +66,10 @@ public void run()
    System.err.println("Done handling connection.");
    return;
 }
-
 /**
 * Read the HTTP request header.
 **/
+
 private void readHTTPRequest(InputStream is){
    String line = null;
    BufferedReader r = new BufferedReader(new InputStreamReader(is));
@@ -85,6 +85,7 @@ catch (Exception e){
 StringTokenizer t = new StringTokenizer(line);
 t.nextToken(); // skips "GET"
 file = t.nextToken();   
+
 
    while (true) {
       try {
@@ -109,21 +110,34 @@ file = t.nextToken();
 **/
 private void writeHTTPHeader(OutputStream os, String contentType) throws Exception
 {
+   try{
+      FileReader fr = new FileReader(file);
+      BufferedReader br = new BufferedReader (fr);
+   } // end try
+   catch (FileNotFoundException e){
+      System.err.println(file + " not found");
+      os.write("HTTP/1.1 404 Not Found\n".getBytes());
+   } // end catch
+   
    Date d = new Date();
    DateFormat df = DateFormat.getDateTimeInstance();
-   df.setTimeZone(TimeZone.getTimeZone("GMT"));
+   df.setTimeZone(TimeZone.getTimeZone("GMT")); 
+//  os.write("HTTP/1.1 404 Not Found\n".getBytes());
    os.write("HTTP/1.1 200 Ok\n".getBytes());
    os.write("Date: ".getBytes());
    os.write((df.format(d)).getBytes());
    os.write("\n".getBytes());
-   os.write("Server: Jon's very own server\n".getBytes());
+   os.write("Server: Evan's server\n".getBytes());
+
    //os.write("Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\n".getBytes());
    //os.write("Content-Length: 438\n".getBytes()); 
+
    os.write("Connection: close\n".getBytes());
    os.write("Content-Type: ".getBytes());
    os.write(contentType.getBytes());
    os.write("\n\n".getBytes()); // HTTP header ends with 2 newlines
    return;
+
 }
 
 /**
@@ -131,17 +145,59 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
 * be done after the HTTP header has been written out.
 * @param os is the OutputStream object to write to
 **/
+
 private void writeContent(OutputStream os) throws Exception
 {
+//   String line;
+   Date d = new Date();
+   DateFormat df = DateFormat.getDateTimeInstance();
+   df.setTimeZone(TimeZone.getTimeZone("GMT")); 
+
+   System.out.println(file);
    file = file.substring(1); // removes forward-slash from string "file"
-   File dir = new File(file); // creates File object from string "file"
-   if (dir != null){
-      Scanner s = new Scanner(dir);
-      while (s.hasNextLine()){
-	String temp = s.next()+ " ";
-	//System.err.println("Next line is: " + temp);
-         os.write(temp.getBytes());
+//   dir = new File(filename); // creates File object from string "file"
+   String line;
+
+   try{
+      FileReader fr = new FileReader(file);
+      BufferedReader br = new BufferedReader (fr); 
+
+      // increments through file body
+      while ((line = br.readLine()) != null){
+         os.write(line.getBytes());
+      
+      if (line.equals("<cs371server>")){
+         os.write("\nEvan's server\n".getBytes());
+      } // end if
+
+      if (line.equals("<cs371date>")){
+         os.write((df.format(d)).getBytes());
+      } // end if
       } // end while
+   } // end try
+
+   catch(FileNotFoundException e){
+      System.err.println(file + " not found");
+      os.write("<h1>404 Not Found</h1>".getBytes());
+   } // end catch
+
+/*  filename = filename.substring(1); // removes forward-slash from string "file"
+   dir = new File(file); // creates File object from string "file"
+   if (dir.exists()){
+      FileReader reader = new FileReader(dir);
+      BufferedReader buffer = new BufferedReader(reader);
+      line = buffer.readLine(); 
+      
+      while (line != null){
+        os.write(line.getBytes());
+	line = buffer.readLine();
+	System.out.println("in while");
+      } // end while
+     buffer.close();
    } // end if
-}
+   else{
+      os.write("<p> 404 NOT FOUND </p>".getBytes());
+  } // end else
+*/
+} // end writeContent
 } // end class

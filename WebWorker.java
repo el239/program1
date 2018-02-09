@@ -57,7 +57,12 @@ public void run()
       InputStream  is = socket.getInputStream();
       OutputStream os = socket.getOutputStream();
       readHTTPRequest(is);
-      writeHTTPHeader(os,findMime(file)); //"text.html"
+
+      String mimeType;
+      mimeType= URLConnection.guessContentTypeFromName(file);
+      System.out.println("File type is: " + mimeType);
+      writeHTTPHeader(os,mimeType); 
+      
       writeContent(os);
       os.flush();
       socket.close();
@@ -183,8 +188,9 @@ private void writeContent(OutputStream os) throws Exception
 } // end writeContent
 
 public static String findMime(String theFile)throws java.io.IOException, MalformedURLException{
-    String type = null;
-    URL thePath = new URL(theFile);
+    String type = null;  
+    URL thePath = new URL(theFile); // need to skip /?
+    System.out.println("HERE IS THE FILE STRING: " + thePath);
     URLConnection theConnection = null;
     theConnection = thePath.openConnection();
     type = theConnection.getContentType();

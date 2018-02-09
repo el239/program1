@@ -35,6 +35,7 @@ public class WebWorker implements Runnable
 
 private Socket socket;
 private String file = ""; 
+String mimeType;
 
 /**
 * Constructor: must have a valid open socket
@@ -58,11 +59,10 @@ public void run()
       OutputStream os = socket.getOutputStream();
       readHTTPRequest(is);
 
-      String mimeType;
       mimeType= URLConnection.guessContentTypeFromName(file);
       System.out.println("File type is: " + mimeType);
       writeHTTPHeader(os,mimeType); 
-      
+   
       writeContent(os);
       os.flush();
       socket.close();
@@ -115,8 +115,6 @@ file = t.nextToken();
 **/
 private void writeHTTPHeader(OutputStream os, String contentType) throws Exception
 {
-// response.setContentType("text/html");
-//   setContentType("image/*");
    try{
       FileReader fr = new FileReader(file.substring(1));
       BufferedReader br = new BufferedReader (fr);
@@ -134,10 +132,6 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
    os.write((df.format(d)).getBytes());
    os.write("\n".getBytes());
    os.write("Server: Evan's server\n".getBytes());
-
-   //os.write("Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\n".getBytes());
-   //os.write("Content-Length: 438\n".getBytes()); 
-
    os.write("Connection: close\n".getBytes());
    os.write("Content-Type: ".getBytes());
    os.write(contentType.getBytes());
@@ -152,8 +146,18 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
 * @param os is the OutputStream object to write to
 **/
 
-private void writeContent(OutputStream os) throws Exception
-{
+private void writeContent(OutputStream os) throws Exception{
+	
+	// catches any image file
+   if (URLConnection.guessContentTypeFromName(file).substring(0,5).contentEquals("image")){
+	    byte[] byteArray = new byte[1024];
+	    int i = 0;
+	    FileInputStream in = new FileInputStream(file.substring(1)); // skips slash
+	    // loop for byte output
+	    while ((i = in.read(byteArray)) >= 0) {
+	        os.write(byteArray, 0, i);
+	    } // end while
+   } // end if
 
    Date d = new Date();
    DateFormat df = DateFormat.getDateTimeInstance();
@@ -186,49 +190,4 @@ private void writeContent(OutputStream os) throws Exception
       os.write("<h1>404 Not Found</h1>".getBytes());
    } // end catch
 } // end writeContent
-
-public static String findMime(String theFile)throws java.io.IOException, MalformedURLException{
-    String type = null;  
-    URL thePath = new URL(theFile); // need to skip /?
-    System.out.println("HERE IS THE FILE STRING: " + thePath);
-    URLConnection theConnection = null;
-    theConnection = thePath.openConnection();
-    type = theConnection.getContentType();
-    return type;
-  } // end findMime
-/*
-public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    // Get the absolute path of the image
-    ServletContext sc = getServletContext();
-    String filename = sc.getRealPath("image.gif");
-
-    // Get the MIME type of the image
-    String mimeType = sc.getMimeType(filename);
-    if (mimeType == null) {
-        sc.log("Could not get MIME type of "+filename);
-        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        return;
-    }
-
-    // Set content type
-    resp.setContentType(mimeType);
-
-    // Set content size
-    File file = new File(filename);
-    resp.setContentLength((int)file.length());
-
-    // Open the file and output streams
-    FileInputStream in = new FileInputStream(file);
-    OutputStream out = resp.getOutputStream();
-
-    // Copy the contents of the file to the output stream
-    byte[] buf = new byte[1024];
-    int count = 0;
-    while ((count = in.read(buf)) >= 0) {
-        out.write(buf, 0, count);
-    }
-    in.close();
-    out.close();
-}
-*/
 } // end class

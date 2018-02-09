@@ -76,6 +76,7 @@ private boolean stop()
 public static void main(String args[])
 {
    int port = 8080;
+//   System.out.println(findMime("\\index.html")); can't get to work
    if (args.length > 1) {
       System.err.println("Usage: java Webserver <portNumber>");
       return;
@@ -91,6 +92,7 @@ public static void main(String args[])
    if (!server.start(port)) {
       System.err.println("Execution failed!");
    }
+
 } // end main
 
 } // end class

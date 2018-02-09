@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.util.TimeZone;
 import java.util.StringTokenizer;
 import java.util.Scanner;
+import java.net.*;
 
 public class WebWorker implements Runnable
 {
@@ -109,6 +110,8 @@ file = t.nextToken();
 **/
 private void writeHTTPHeader(OutputStream os, String contentType) throws Exception
 {
+// response.setContentType("text/html");
+//   setContentType("image/*");
    try{
       FileReader fr = new FileReader(file.substring(1));
       BufferedReader br = new BufferedReader (fr);
@@ -146,14 +149,13 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
 
 private void writeContent(OutputStream os) throws Exception
 {
-//   String line;
+
    Date d = new Date();
    DateFormat df = DateFormat.getDateTimeInstance();
    df.setTimeZone(TimeZone.getTimeZone("GMT")); 
 
    System.out.println(file);
    file = file.substring(1); // removes forward-slash from string "file"
-//   dir = new File(filename); // creates File object from string "file"
    String line;
 
    try{
@@ -179,4 +181,48 @@ private void writeContent(OutputStream os) throws Exception
       os.write("<h1>404 Not Found</h1>".getBytes());
    } // end catch
 } // end writeContent
+
+public static String findMime(String theFile)throws java.io.IOException, MalformedURLException{
+    String type = null;
+    URL thePath = new URL(theFile);
+    URLConnection theConnection = null;
+    theConnection = thePath.openConnection();
+    type = theConnection.getContentType();
+    return type;
+  } // end findMime
+
+public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    // Get the absolute path of the image
+    ServletContext sc = getServletContext();
+    String filename = sc.getRealPath("image.gif");
+
+    // Get the MIME type of the image
+    String mimeType = sc.getMimeType(filename);
+    if (mimeType == null) {
+        sc.log("Could not get MIME type of "+filename);
+        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        return;
+    }
+
+    // Set content type
+    resp.setContentType(mimeType);
+
+    // Set content size
+    File file = new File(filename);
+    resp.setContentLength((int)file.length());
+
+    // Open the file and output streams
+    FileInputStream in = new FileInputStream(file);
+    OutputStream out = resp.getOutputStream();
+
+    // Copy the contents of the file to the output stream
+    byte[] buf = new byte[1024];
+    int count = 0;
+    while ((count = in.read(buf)) >= 0) {
+        out.write(buf, 0, count);
+    }
+    in.close();
+    out.close();
+}
+
 } // end class

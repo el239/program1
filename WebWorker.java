@@ -57,7 +57,7 @@ public void run()
       InputStream  is = socket.getInputStream();
       OutputStream os = socket.getOutputStream();
       readHTTPRequest(is);
-      writeHTTPHeader(os,"text/html");
+      writeHTTPHeader(os,findMime(file)); //"text.html"
       writeContent(os);
       os.flush();
       socket.close();
@@ -190,7 +190,7 @@ public static String findMime(String theFile)throws java.io.IOException, Malform
     type = theConnection.getContentType();
     return type;
   } // end findMime
-
+/*
 public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     // Get the absolute path of the image
     ServletContext sc = getServletContext();
@@ -224,5 +224,5 @@ public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOExc
     in.close();
     out.close();
 }
-
+*/
 } // end class

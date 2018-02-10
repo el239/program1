@@ -120,6 +120,7 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
       BufferedReader br = new BufferedReader (fr);
    } // end try
    catch (FileNotFoundException e){
+	  os.write("<h1>404 Not Found</h1>".getBytes());
       System.err.println(e + " " + file + " not found");
       os.write("HTTP/1.1 404 Not Found\n".getBytes());
    } // end catch
@@ -137,8 +138,7 @@ private void writeHTTPHeader(OutputStream os, String contentType) throws Excepti
    os.write(contentType.getBytes());
    os.write("\n\n".getBytes()); // HTTP header ends with 2 newlines
    return;
-
-}
+} // end writeHTTPHeader
 
 /**
 * Write the data content to the client network connection. This MUST
